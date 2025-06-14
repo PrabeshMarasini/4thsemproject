@@ -174,7 +174,11 @@ if ($conn->connect_error) {
 
 $full_name = $_SESSION['full_name'];
 
-$sql = "SELECT * FROM upload WHERE full_name = '$full_name'";
+// Modified query to exclude pets that are already adopted
+// This joins with pet_adoptions table and excludes pets that exist there
+$sql = "SELECT u.* FROM upload u 
+        LEFT JOIN projectgu.pet_adoptions pa ON u.id = pa.id 
+        WHERE u.full_name = '$full_name' AND pa.id IS NULL";
 
 $result = $conn->query($sql);
 
@@ -202,7 +206,7 @@ if ($result === false) {
 <?php
         }
     } else {
-        echo "No results found for full name: " . $full_name;
+        echo "No available posts found for: " . $full_name;
     }
 }
 
@@ -232,7 +236,10 @@ if ($conn->connect_error) {
 
 $full_name = $_SESSION['full_name'];
 
-$sql = "SELECT * FROM adopt WHERE full_name = '$full_name'";
+// Modified query to exclude adoption requests for pets that are already adopted
+$sql = "SELECT a.* FROM adopt a 
+        LEFT JOIN pet_adoptions pa ON a.id = pa.id 
+        WHERE a.full_name = '$full_name' AND pa.id IS NULL";
 $result = $conn->query($sql);
 
 if ($result === false) {
@@ -292,7 +299,10 @@ if ($conn->connect_error) {
 
 $full_name = $_SESSION['full_name'];
 
-$sql = "SELECT * FROM adopt WHERE full_name1 = '$full_name'";
+// Modified query to exclude adoption requests for pets that are already adopted
+$sql = "SELECT a.* FROM adopt a 
+        LEFT JOIN pet_adoptions pa ON a.id = pa.id 
+        WHERE a.full_name1 = '$full_name' AND pa.id IS NULL";
 $result = $conn->query($sql);
 
 if ($result === false) {

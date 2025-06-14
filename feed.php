@@ -78,7 +78,10 @@ if(isset($_SESSION["full_name"])) {
  $full_name = $_SESSION['full_name'];
  $_SESSION['full_name1'] = $full_name;
 
- $sql = "SELECT * FROM upload WHERE full_name <> '$full_name' ORDER BY RAND()";
+ $sql = "SELECT * FROM upload 
+        WHERE full_name <> '$full_name' 
+        AND id NOT IN (SELECT id FROM projectgu.pet_adoptions)
+        ORDER BY RAND()";
  $result = $conn->query($sql);
 
  if ($result->num_rows > 0) {
@@ -101,8 +104,8 @@ if(isset($_SESSION["full_name"])) {
           <div class='col-12'>
               <form action='process_adoption.php' method='post'>
                   <input type='hidden' name='image_path' value='<?php echo $row['image_path']; ?>'>
-                  <input type='hidden' name='full_name1' value='<?php echo $_SESSION['full_name1']; ?>'>   Picked for Adoption
-                  <input type='hidden' name='full_name' value='<?php echo $row['full_name']; ?>'>   Gave for adoption  
+                  <input type='hidden' name='full_name1' value='<?php echo $_SESSION['full_name1']; ?>'>
+                  <input type='hidden' name='full_name' value='<?php echo $row['full_name']; ?>'>
                   <input type='hidden' name='id' value='<?php echo $row['id']; ?>'>
                   <input type='hidden' name='label1' value='<?php echo $row['label1']; ?>'>
                   <input type='hidden' name='label2' value='<?php echo $row['label2']; ?>'>

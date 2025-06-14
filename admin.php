@@ -202,14 +202,39 @@ $conn->close();
     <div class="form-container">
         <button class="close-button" onclick="petsadoption()"><strong>&times;</strong></button><br>
     <?php
- $conn = new mysqli('localhost', 'root', '', 'uploads');
-
- if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+ // Connect to uploads database
+ $conn_uploads = new mysqli('localhost', 'root', '', 'uploads');
+ if ($conn_uploads->connect_error) {
+    die("Connection failed: " . $conn_uploads->connect_error);
  }
 
- $sql = "SELECT * FROM upload ORDER BY RAND()";
- $result = $conn->query($sql);
+ // Connect to projectgu database to check adopted pets
+ $conn_adopted = new mysqli('localhost', 'root', '', 'projectgu');
+ if ($conn_adopted->connect_error) {
+    die("Connection failed: " . $conn_adopted->connect_error);
+ }
+
+ // Get all adopted pet IDs
+ $adopted_pets_sql = "SELECT id FROM pet_adoptions";
+ $adopted_result = $conn_adopted->query($adopted_pets_sql);
+ $adopted_pet_ids = array();
+ 
+ if ($adopted_result->num_rows > 0) {
+    while($adopted_row = $adopted_result->fetch_assoc()) {
+        $adopted_pet_ids[] = $adopted_row['id'];
+    }
+ }
+
+ // Build the query to exclude adopted pets
+ if (!empty($adopted_pet_ids)) {
+    $adopted_ids_string = implode(',', $adopted_pet_ids);
+    $sql = "SELECT * FROM upload WHERE id NOT IN ($adopted_ids_string) ORDER BY RAND()";
+ } else {
+    // If no pets are adopted, show all pets
+    $sql = "SELECT * FROM upload ORDER BY RAND()";
+ }
+
+ $result = $conn_uploads->query($sql);
 
  if ($result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
@@ -218,6 +243,7 @@ $conn->close();
           <div class='clearfix'>
             <img class='img' src='" . $row['image_path'] . "' alt='Image'>
             <div>
+              <h5 class='border-0 px-4'>Pet ID: " . $row['id'] . "</h5>
               <h5 class='border-0 px-4'>Uploaded by: " . $row['full_name'] . "</h5>
               <h5 class='border-0 px-4'>Name: " . $row['label1'] . "</h5>
               <h5 class='border-0 px-4'>Breed: " . $row['label2'] . "</h5>
@@ -231,9 +257,11 @@ $conn->close();
       ";
     }
  } else {
-    echo "No results found";
+    echo "No pets available for adoption";
  }
- $conn->close();
+ 
+ $conn_uploads->close();
+ $conn_adopted->close();
 ?>
     </div>
        </div>
@@ -275,7 +303,7 @@ $conn->close();
       ";
     }
  } else {
-    echo "No results found";
+    echo "No adoptions found";
  }
  $conn->close();
 ?>
